@@ -76,13 +76,16 @@ class AdminStoreDetailsView extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppTheme.primaryColor,
-        onPressed: () {
-          _showCreateProductDialog(context, firebaseService, store.id);
-        },
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text("Nuevo Producto", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90.0), // Pushes the FAB up so it's not hidden by the bottom nav bar
+        child: FloatingActionButton.extended(
+          backgroundColor: AppTheme.primaryColor,
+          onPressed: () {
+            _showCreateProductDialog(context, firebaseService, store.id);
+          },
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: const Text("Nuevo Producto", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
       ),
     );
   }
@@ -108,24 +111,16 @@ class AdminStoreDetailsView extends StatelessWidget {
                   const SizedBox(height: 16),
                   TextField(controller: descCtrl, decoration: const InputDecoration(labelText: "Descripción"), maxLines: 2),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: priceCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: "Precio (\$)", prefixText: "\$"),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          controller: prepCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: "Min. Prep.", suffixText: "min"),
-                        ),
-                      ),
-                    ],
+                  TextField(
+                    controller: priceCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: "Precio (\$)", prefixText: "\$ "),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: prepCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Tiempo de Preparación", suffixText: " min"),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
@@ -202,24 +197,16 @@ class AdminStoreDetailsView extends StatelessWidget {
                   const SizedBox(height: 16),
                   TextField(controller: descCtrl, decoration: const InputDecoration(labelText: "Descripción"), maxLines: 2),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: priceCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: "Precio (\$)", prefixText: "\$"),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          controller: prepCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: "Min. Prep.", suffixText: "min"),
-                        ),
-                      ),
-                    ],
+                  TextField(
+                    controller: priceCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: "Precio (\$)", prefixText: "\$ "),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: prepCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Tiempo de Preparación", suffixText: " min"),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
