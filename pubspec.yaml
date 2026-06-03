@@ -1,0 +1,30 @@
+name: puce_delivery_app
+description: "Delivery app and student entrepreneurship platform for PUCE-SI."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+  firebase_core: any
+  firebase_auth: any
+  cloud_firestore: any
+  provider: any
+  google_fonts: any
+  flutter_spinkit: any
+  record: ^7.0.0
+  path_provider: ^2.1.5
+  speech_to_text: ^7.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+
+flutter:
+  uses-material-design: true

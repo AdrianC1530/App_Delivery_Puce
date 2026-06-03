@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "117656281108",
+    "project_id": "appdeliverypuce",
+    "storage_bucket": "appdeliverypuce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:117656281108:android:5fc58126a11ceb273e8701",
+        "android_client_info": {
+          "package_name": "com.example.puce_delivery_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtRujHZH2AOh1z4ADgT7u18sVQW00XGy4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
