@@ -7,6 +7,7 @@ import 'services/cart_provider.dart';
 import 'core/theme.dart';
 import 'views/welcome/welcome_view.dart';
 import 'views/home/home_view.dart';
+import 'views/home/merchant_dashboard_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,13 +47,22 @@ class PuceDeliveryApp extends StatelessWidget {
     final firebaseService = context.watch<FirebaseService>();
     final user = firebaseService.currentUser;
 
+    Widget homeWidget = const WelcomeView();
+    if (user != null) {
+      if (user.role == 'merchant') {
+        homeWidget = const MerchantDashboardView();
+      } else {
+        homeWidget = const HomeView();
+      }
+    }
+
     return MaterialApp(
       title: 'PUCE-SI Delivery',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // Dynamically matches user OS setting
-      home: user != null ? const HomeView() : const WelcomeView(),
+      home: homeWidget,
     );
   }
 }

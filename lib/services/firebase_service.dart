@@ -18,6 +18,7 @@ class FirebaseService extends ChangeNotifier {
 
   UserModel? _currentUser;
   bool _isLoading = false;
+  String? merchantStoreId;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -46,7 +47,7 @@ class FirebaseService extends ChangeNotifier {
       _currentUser = UserModel(
         uid: "mock-student-123",
         name: "Daniela Ibarra",
-        email: "daniela.ibarra@pucesi.edu.ec",
+        email: "daniela.ibarra@demo.app",
         role: "student",
         phoneNumber: "0991234567",
         createdAt: DateTime.now(),
@@ -62,6 +63,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Bloque A (Aulas), Planta Baja",
+        ownerEmail: "bar1@demo.app",
       ),
       StoreModel(
         id: "store-2",
@@ -71,6 +73,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Junto a la pileta del Bloque B",
+        ownerEmail: "bar2@demo.app",
       ),
       StoreModel(
         id: "store-3",
@@ -80,6 +83,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Planta baja del Edificio Administrativo",
+        ownerEmail: "papeleria@demo.app",
       ),
     ]);
 
@@ -204,11 +208,23 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> fetchUserData(String uid) async {
-    if (useMock) return;
+    if (useMock) {
+      if (_currentUser?.role == 'merchant') {
+        merchantStoreId = _mockStores.firstWhere((s) => s.ownerEmail == _currentUser?.email, orElse: () => _mockStores.first).id;
+      }
+      return;
+    }
     try {
       DocumentSnapshot doc = await db.collection('users').doc(uid).get();
       if (doc.exists) {
         _currentUser = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+        
+        if (_currentUser?.role == 'merchant') {
+          final storeQuery = await db.collection('stores').where('ownerEmail', isEqualTo: _currentUser!.email).limit(1).get();
+          if (storeQuery.docs.isNotEmpty) {
+            merchantStoreId = storeQuery.docs.first.id;
+          }
+        }
       }
     } catch (e) {
       debugPrint("Error fetching user data: $e");
@@ -403,7 +419,7 @@ class FirebaseService extends ChangeNotifier {
     required String category,
     required int preparationTimeMinutes,
   }) async {
-    if (_currentUser?.role != 'admin') return "Acceso denegado";
+    if (_currentUser?.role != 'admin' && _currentUser?.role != 'merchant') return "Acceso denegado";
     if (useMock) return "No disponible en Mock";
 
     try {
@@ -428,11 +444,54 @@ class FirebaseService extends ChangeNotifier {
   }
 
   Future<void> toggleProductAvailability(String productId, bool isAvailable) async {
-    if (_currentUser?.role != 'admin') return;
+    if (_currentUser?.role != 'admin' && _currentUser?.role != 'merchant') return;
     try {
       await db.collection('products').doc(productId).update({'isAvailable': isAvailable});
     } catch (e) {
       debugPrint("Error toggling product availability: $e");
+    }
+  }
+
+  Future<String?> updateProduct({
+    required String productId,
+    required String name,
+    required String description,
+    required double price,
+    required String category,
+    required int preparationTimeMinutes,
+  }) async {
+    if (_currentUser?.role != 'admin' && _currentUser?.role != 'merchant') return "Acceso denegado";
+    if (useMock) {
+      final index = _mockProducts.indexWhere((p) => p.id == productId);
+      if (index != -1) {
+        final old = _mockProducts[index];
+        _mockProducts[index] = ProductModel(
+          id: old.id,
+          storeId: old.storeId,
+          name: name,
+          description: description,
+          price: price,
+          imageUrl: old.imageUrl,
+          category: category,
+          isAvailable: old.isAvailable,
+          preparationTimeMinutes: preparationTimeMinutes,
+        );
+        notifyListeners();
+      }
+      return null;
+    }
+
+    try {
+      await db.collection('products').doc(productId).update({
+        'name': name,
+        'description': description,
+        'price': price,
+        'category': category,
+        'preparationTimeMinutes': preparationTimeMinutes,
+      });
+      return null;
+    } catch (e) {
+      return e.toString();
     }
   }
 
@@ -510,6 +569,12 @@ class FirebaseService extends ChangeNotifier {
 
   Stream<List<OrderModel>> streamAllOrders() {
     if (_currentUser?.role != 'admin' && _currentUser?.role != 'merchant') return Stream.value([]);
+    
+    // If the user is a merchant and has a specific store, only stream their store's orders
+    if (_currentUser?.role == 'merchant' && merchantStoreId != null) {
+      return streamMerchantOrders(merchantStoreId!);
+    }
+
     if (useMock) return Stream.value(_mockOrders);
 
     return db
@@ -704,19 +769,42 @@ class FirebaseService extends ChangeNotifier {
         await db.collection('entrepreneurships').doc(ent.id).set(ent.toMap());
       }
       
-      // 4. Create a test user if it doesn't exist
+      // 4. Create a test admin user if it doesn't exist
       try {
         await signUp(
-          email: 'admin@pucesi.edu.ec',
+          email: 'admin@demo.app',
           password: 'admin123',
           name: 'Super Administrador',
           phoneNumber: '0999999999',
           role: 'admin',
         );
-        debugPrint("Usuario de prueba creado exitosamente.");
+        debugPrint("Usuario admin creado exitosamente.");
       } catch (e) {
-        debugPrint("Usuario de prueba ya existía o error al crear: $e");
+        debugPrint("Usuario admin ya existía o error al crear: $e");
       }
+
+      // 5. Create merchant accounts
+      final merchants = [
+        {'email': 'bar1@demo.app', 'name': 'Bar Central'},
+        {'email': 'bar2@demo.app', 'name': 'El Rincón del Dulce'},
+        {'email': 'papeleria@demo.app', 'name': 'Papelería Universitaria'},
+      ];
+
+      for (var m in merchants) {
+        try {
+          await signUp(
+            email: m['email']!,
+            password: 'bar123', // Default password
+            name: m['name']!,
+            phoneNumber: '0999999999',
+            role: 'merchant',
+          );
+          debugPrint("Merchant ${m['email']} creado exitosamente.");
+        } catch (e) {
+          debugPrint("Merchant ${m['email']} ya existía o error al crear: $e");
+        }
+      }
+
       debugPrint("¡Migración de datos a Firebase completada con éxito!");
     } catch (e) {
       debugPrint("Error durante la migración a Firebase: $e");

@@ -6,6 +6,7 @@ class StoreModel {
   final String locationDescription;
   final bool isOpen;
   final double rating;
+  final String? ownerEmail;
 
   StoreModel({
     required this.id,
@@ -15,6 +16,7 @@ class StoreModel {
     required this.locationDescription,
     required this.isOpen,
     required this.rating,
+    this.ownerEmail,
   });
 
   factory StoreModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -26,6 +28,7 @@ class StoreModel {
       locationDescription: map['locationDescription'] ?? '',
       isOpen: map['isOpen'] ?? true,
       rating: (map['rating'] ?? 5.0).toDouble(),
+      ownerEmail: map['ownerEmail'],
     );
   }
 
@@ -37,6 +40,7 @@ class StoreModel {
       'locationDescription': locationDescription,
       'isOpen': isOpen,
       'rating': rating,
+      if (ownerEmail != null) 'ownerEmail': ownerEmail,
     };
   }
 }

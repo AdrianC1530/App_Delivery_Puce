@@ -56,9 +56,6 @@ class AdminStoresView extends StatelessWidget {
                       firebaseService.toggleStoreStatus(store.id, val);
                     },
                   ),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => AdminStoreDetailsView(store: store)));
-                  },
                 ),
               );
             },

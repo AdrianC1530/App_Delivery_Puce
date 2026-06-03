@@ -52,12 +52,23 @@ class AdminStoreDetailsView extends StatelessWidget {
                       Text("Preparación: ${product.preparationTimeMinutes} min", style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                     ],
                   ),
-                  trailing: Switch(
-                    value: product.isAvailable,
-                    activeColor: Colors.green,
-                    onChanged: (val) {
-                      firebaseService.toggleProductAvailability(product.id, val);
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_rounded, color: Colors.grey),
+                        onPressed: () {
+                          _showEditProductDialog(context, firebaseService, product);
+                        },
+                      ),
+                      Switch(
+                        value: product.isAvailable,
+                        activeColor: Colors.green,
+                        onChanged: (val) {
+                          firebaseService.toggleProductAvailability(product.id, val);
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -156,6 +167,93 @@ class AdminStoreDetailsView extends StatelessWidget {
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
                 child: const Text("Crear"),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+
+  void _showEditProductDialog(BuildContext context, FirebaseService service, ProductModel product) {
+    final nameCtrl = TextEditingController(text: product.name);
+    final descCtrl = TextEditingController(text: product.description);
+    final priceCtrl = TextEditingController(text: product.price.toStringAsFixed(2));
+    final prepCtrl = TextEditingController(text: product.preparationTimeMinutes.toString());
+    String category = product.category;
+
+    // Check if category exists in list, else default
+    final validCategories = ['Almuerzos', 'Snacks', 'Bebidas', 'Postres', 'Útiles', 'Servicios'];
+    if (!validCategories.contains(category)) {
+      category = 'Almuerzos';
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text("Editar Producto", style: TextStyle(color: AppTheme.darkPurple)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Nombre")),
+                  const SizedBox(height: 16),
+                  TextField(controller: descCtrl, decoration: const InputDecoration(labelText: "Descripción"), maxLines: 2),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: priceCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: "Precio (\$)", prefixText: "\$"),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: prepCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: "Min. Prep.", suffixText: "min"),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: category,
+                    decoration: const InputDecoration(labelText: "Categoría"),
+                    items: validCategories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => category = val);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancelar")),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+                onPressed: () async {
+                  if (nameCtrl.text.isEmpty || priceCtrl.text.isEmpty || prepCtrl.text.isEmpty) return;
+                  
+                  final price = double.tryParse(priceCtrl.text.replaceAll(',', '.')) ?? 0.0;
+                  final prepTime = int.tryParse(prepCtrl.text) ?? 5;
+
+                  await service.updateProduct(
+                    productId: product.id,
+                    name: nameCtrl.text.trim(),
+                    description: descCtrl.text.trim(),
+                    price: price,
+                    category: category,
+                    preparationTimeMinutes: prepTime,
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text("Guardar"),
               ),
             ],
           );
