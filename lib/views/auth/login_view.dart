@@ -5,6 +5,7 @@ import '../../services/firebase_service.dart';
 import '../../core/theme.dart';
 import 'register_view.dart';
 import '../home/home_view.dart';
+import '../home/merchant_dashboard_view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -46,9 +47,14 @@ class _LoginViewState extends State<LoginView> {
         ),
       );
     } else {
-      Navigator.pushReplacement(
+      Widget nextView = const HomeView();
+      if (service.currentUser?.role == 'merchant') {
+        nextView = const MerchantDashboardView();
+      }
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const HomeView()),
+        MaterialPageRoute(builder: (_) => nextView),
+        (route) => false,
       );
     }
   }

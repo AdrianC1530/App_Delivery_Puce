@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../../services/firebase_service.dart';
 import '../../core/theme.dart';
 import '../home/home_view.dart';
+import '../home/merchant_dashboard_view.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -54,10 +55,14 @@ class _RegisterViewState extends State<RegisterView> {
         ),
       );
     } else {
-      // Clear navigation stack and go to Home
+      // Clear navigation stack and go to Home or Dashboard
+      Widget nextView = const HomeView();
+      if (service.currentUser?.role == 'merchant') {
+        nextView = const MerchantDashboardView();
+      }
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const HomeView()),
+        MaterialPageRoute(builder: (_) => nextView),
         (route) => false,
       );
     }
