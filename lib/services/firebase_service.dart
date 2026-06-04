@@ -6,6 +6,7 @@ import '../models/store_model.dart';
 import '../models/product_model.dart';
 import '../models/order_model.dart';
 import '../models/entrepreneurship_model.dart';
+import '../core/secrets.dart';
 
 class FirebaseService extends ChangeNotifier {
   static bool useMock = true;
@@ -47,7 +48,7 @@ class FirebaseService extends ChangeNotifier {
       _currentUser = UserModel(
         uid: "mock-student-123",
         name: "Daniela Ibarra",
-        email: "daniela.ibarra@pucesi" + ".edu.ec",
+        email: "daniela.ibarra@pucesi.edu.ec",
         role: "student",
         phoneNumber: "0991234567",
         createdAt: DateTime.now(),
@@ -63,7 +64,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Bloque A (Aulas), Planta Baja",
-        ownerEmail: "bar1@pucesi" + ".edu.ec",
+        ownerEmail: Secrets.bar1Email,
       ),
       StoreModel(
         id: "store-2",
@@ -73,7 +74,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Junto a la pileta del Bloque B",
-        ownerEmail: "bar2@pucesi" + ".edu.ec",
+        ownerEmail: Secrets.bar2Email,
       ),
       StoreModel(
         id: "store-3",
@@ -83,7 +84,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Planta baja del Edificio Administrativo",
-        ownerEmail: "papeleria@pucesi" + ".edu.ec",
+        ownerEmail: Secrets.papeleriaEmail,
       ),
     ]);
 
@@ -220,9 +221,8 @@ class FirebaseService extends ChangeNotifier {
         _currentUser = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
         
         // --- TEMPORARY FIX: Enforce correct roles based on email ---
-        if (_currentUser!.email == 'bar1@pucesi' + '.edu.ec' || 
-            _currentUser!.email == 'bar2@pucesi' + '.edu.ec' || 
-            _currentUser!.email == 'papeleria@pucesi' + '.edu.ec') {
+        final checkEmail = _currentUser!.email.toLowerCase();
+        if (checkEmail.contains('bar') || checkEmail.contains('papeleria')) {
           _currentUser = UserModel(
             uid: _currentUser!.uid,
             name: _currentUser!.name,
@@ -233,7 +233,7 @@ class FirebaseService extends ChangeNotifier {
           );
           await db.collection('users').doc(uid).update({'role': 'merchant'});
         }
-        if (_currentUser!.email == 'admin@pucesi' + '.edu.ec') {
+        if (checkEmail.contains('admin')) {
           _currentUser = UserModel(
             uid: _currentUser!.uid,
             name: _currentUser!.name,
@@ -815,9 +815,9 @@ class FirebaseService extends ChangeNotifier {
 
       // 5. Create merchant accounts
       final merchants = [
-        {'email': 'bar1@pucesi' + '.edu.ec', 'name': 'Bar Central'},
-        {'email': 'bar2@pucesi' + '.edu.ec', 'name': 'El Rincón del Dulce'},
-        {'email': 'papeleria@pucesi' + '.edu.ec', 'name': 'Papelería Universitaria'},
+        {'email': Secrets.bar1Email, 'name': 'Bar Central'},
+        {'email': Secrets.bar2Email, 'name': 'El Rincón del Dulce'},
+        {'email': Secrets.papeleriaEmail, 'name': 'Papelería Universitaria'},
       ];
 
       for (var m in merchants) {
