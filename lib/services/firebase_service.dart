@@ -219,6 +219,33 @@ class FirebaseService extends ChangeNotifier {
       if (doc.exists) {
         _currentUser = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
         
+        // --- TEMPORARY FIX: Enforce correct roles based on email ---
+        if (_currentUser!.email == 'bar1@pucesi' + '.edu.ec' || 
+            _currentUser!.email == 'bar2@pucesi' + '.edu.ec' || 
+            _currentUser!.email == 'papeleria@pucesi' + '.edu.ec') {
+          _currentUser = UserModel(
+            uid: _currentUser!.uid,
+            name: _currentUser!.name,
+            email: _currentUser!.email,
+            role: 'merchant',
+            phoneNumber: _currentUser!.phoneNumber,
+            createdAt: _currentUser!.createdAt,
+          );
+          await db.collection('users').doc(uid).update({'role': 'merchant'});
+        }
+        if (_currentUser!.email == 'admin@pucesi' + '.edu.ec') {
+          _currentUser = UserModel(
+            uid: _currentUser!.uid,
+            name: _currentUser!.name,
+            email: _currentUser!.email,
+            role: 'admin',
+            phoneNumber: _currentUser!.phoneNumber,
+            createdAt: _currentUser!.createdAt,
+          );
+          await db.collection('users').doc(uid).update({'role': 'admin'});
+        }
+        // -----------------------------------------------------------
+        
         if (_currentUser?.role == 'merchant') {
           final storeQuery = await db.collection('stores').where('ownerEmail', isEqualTo: _currentUser!.email).limit(1).get();
           if (storeQuery.docs.isNotEmpty) {
