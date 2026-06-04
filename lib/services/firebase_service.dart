@@ -339,7 +339,10 @@ class FirebaseService extends ChangeNotifier {
       return null;
     }
     try {
-      await auth.signInWithEmailAndPassword(email: email, password: password);
+      final credential = await auth.signInWithEmailAndPassword(email: email, password: password);
+      if (credential.user != null) {
+        await fetchUserData(credential.user!.uid);
+      }
       _setLoading(false);
       return null;
     } on FirebaseAuthException catch (e) {
