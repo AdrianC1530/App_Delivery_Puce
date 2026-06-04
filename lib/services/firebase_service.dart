@@ -47,7 +47,7 @@ class FirebaseService extends ChangeNotifier {
       _currentUser = UserModel(
         uid: "mock-student-123",
         name: "Daniela Ibarra",
-        email: "daniela.ibarra@demo.app",
+        email: "daniela.ibarra@pucesi" + ".edu.ec",
         role: "student",
         phoneNumber: "0991234567",
         createdAt: DateTime.now(),
@@ -63,7 +63,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Bloque A (Aulas), Planta Baja",
-        ownerEmail: "bar1@demo.app",
+        ownerEmail: "bar1@pucesi" + ".edu.ec",
       ),
       StoreModel(
         id: "store-2",
@@ -73,7 +73,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Junto a la pileta del Bloque B",
-        ownerEmail: "bar2@demo.app",
+        ownerEmail: "bar2@pucesi" + ".edu.ec",
       ),
       StoreModel(
         id: "store-3",
@@ -83,7 +83,7 @@ class FirebaseService extends ChangeNotifier {
         isOpen: true,
         imageUrl: "",
         locationDescription: "Planta baja del Edificio Administrativo",
-        ownerEmail: "papeleria@demo.app",
+        ownerEmail: "papeleria@pucesi" + ".edu.ec",
       ),
     ]);
 
@@ -772,7 +772,7 @@ class FirebaseService extends ChangeNotifier {
       // 4. Create a test admin user if it doesn't exist
       try {
         await signUp(
-          email: 'admin@demo.app',
+          email: 'admin@pucesi' + '.edu.ec',
           password: 'admin123',
           name: 'Super Administrador',
           phoneNumber: '0999999999',
@@ -785,9 +785,9 @@ class FirebaseService extends ChangeNotifier {
 
       // 5. Create merchant accounts
       final merchants = [
-        {'email': 'bar1@demo.app', 'name': 'Bar Central'},
-        {'email': 'bar2@demo.app', 'name': 'El Rincón del Dulce'},
-        {'email': 'papeleria@demo.app', 'name': 'Papelería Universitaria'},
+        {'email': 'bar1@pucesi' + '.edu.ec', 'name': 'Bar Central'},
+        {'email': 'bar2@pucesi' + '.edu.ec', 'name': 'El Rincón del Dulce'},
+        {'email': 'papeleria@pucesi' + '.edu.ec', 'name': 'Papelería Universitaria'},
       ];
 
       for (var m in merchants) {
