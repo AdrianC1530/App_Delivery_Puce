@@ -45,6 +45,8 @@ class OrderModel {
   final double total;
   final String status; // 'pending' | 'preparing' | 'ready_for_pickup' | 'delivering' | 'completed' | 'cancelled'
   final String deliveryLocation;
+  final String paymentMethod; // 'cash' | 'transfer'
+  final String? paymentReceiptBase64;
   final DateTime createdAt;
 
   OrderModel({
@@ -56,6 +58,8 @@ class OrderModel {
     required this.total,
     required this.status,
     required this.deliveryLocation,
+    required this.paymentMethod,
+    this.paymentReceiptBase64,
     required this.createdAt,
   });
 
@@ -72,6 +76,8 @@ class OrderModel {
       total: (map['total'] ?? 0.0).toDouble(),
       status: map['status'] ?? 'pending',
       deliveryLocation: map['deliveryLocation'] ?? '',
+      paymentMethod: map['paymentMethod'] ?? 'cash',
+      paymentReceiptBase64: map['paymentReceiptBase64'],
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -85,6 +91,8 @@ class OrderModel {
       'total': total,
       'status': status,
       'deliveryLocation': deliveryLocation,
+      'paymentMethod': paymentMethod,
+      if (paymentReceiptBase64 != null) 'paymentReceiptBase64': paymentReceiptBase64,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

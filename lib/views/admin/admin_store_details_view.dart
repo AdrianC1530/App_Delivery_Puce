@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 import '../../services/firebase_service.dart';
 import '../../models/store_model.dart';
 import '../../models/product_model.dart';
@@ -20,6 +22,13 @@ class AdminStoreDetailsView extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppTheme.darkPurple),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_2_rounded, color: AppTheme.primaryColor),
+            onPressed: () => _showPaymentConfigDialog(context, firebaseService, store),
+            tooltip: 'Configurar Pagos DeUna!',
+          )
+        ],
       ),
       body: StreamBuilder<List<ProductModel>>(
         stream: firebaseService.streamProducts(store.id),

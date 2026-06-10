@@ -533,6 +533,8 @@ class FirebaseService extends ChangeNotifier {
     required List<CartItem> items,
     required double total,
     required String deliveryLocation,
+    required String paymentMethod,
+    String? paymentReceiptBase64,
   }) async {
     if (_currentUser == null) return "User not logged in";
     
@@ -548,6 +550,8 @@ class FirebaseService extends ChangeNotifier {
         total: total,
         status: 'pending',
         deliveryLocation: deliveryLocation,
+        paymentMethod: paymentMethod,
+        paymentReceiptBase64: paymentReceiptBase64,
         createdAt: DateTime.now(),
       );
       _mockOrders.insert(0, newOrder);
@@ -567,6 +571,8 @@ class FirebaseService extends ChangeNotifier {
         total: total,
         status: 'pending',
         deliveryLocation: deliveryLocation,
+        paymentMethod: paymentMethod,
+        paymentReceiptBase64: paymentReceiptBase64,
         createdAt: DateTime.now(),
       );
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/firebase_service.dart';
@@ -255,6 +256,51 @@ Widget _buildOrderCard(BuildContext context, OrderModel order, {required bool is
                   "Total: \$${order.total.toStringAsFixed(2)}",
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.accentColor),
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(order.paymentMethod == 'transfer' ? Icons.account_balance_wallet_rounded : Icons.money_rounded, size: 16, color: AppTheme.primaryColor),
+                      const SizedBox(width: 4),
+                      Text(order.paymentMethod == 'transfer' ? "Transferencia" : "Efectivo", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.darkPurple)),
+                    ],
+                  ),
+                ),
+                if (isMerchantFlow && order.paymentMethod == 'transfer' && order.paymentReceiptBase64 != null)
+                  TextButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text("Comprobante de Pago", style: TextStyle(color: AppTheme.darkPurple)),
+                          content: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.memory(base64Decode(order.paymentReceiptBase64!), fit: BoxFit.contain),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text("Cerrar"),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                    label: const Text("Ver Comprobante", style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 0), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  ),
               ],
             ),
             

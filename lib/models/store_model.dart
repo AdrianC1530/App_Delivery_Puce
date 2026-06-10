@@ -7,6 +7,8 @@ class StoreModel {
   final bool isOpen;
   final double rating;
   final String? ownerEmail;
+  final String? paymentQrBase64;
+  final String? paymentAccountInfo;
 
   StoreModel({
     required this.id,
@@ -17,6 +19,8 @@ class StoreModel {
     required this.isOpen,
     required this.rating,
     this.ownerEmail,
+    this.paymentQrBase64,
+    this.paymentAccountInfo,
   });
 
   factory StoreModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -29,6 +33,8 @@ class StoreModel {
       isOpen: map['isOpen'] ?? true,
       rating: (map['rating'] ?? 5.0).toDouble(),
       ownerEmail: map['ownerEmail'],
+      paymentQrBase64: map['paymentQrBase64'],
+      paymentAccountInfo: map['paymentAccountInfo'],
     );
   }
 
@@ -41,6 +47,8 @@ class StoreModel {
       'isOpen': isOpen,
       'rating': rating,
       if (ownerEmail != null) 'ownerEmail': ownerEmail,
+      if (paymentQrBase64 != null) 'paymentQrBase64': paymentQrBase64,
+      if (paymentAccountInfo != null) 'paymentAccountInfo': paymentAccountInfo,
     };
   }
 }

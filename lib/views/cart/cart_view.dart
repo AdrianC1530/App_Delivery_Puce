@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'dart:ui';
+import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 import '../../services/cart_provider.dart';
 import '../../services/firebase_service.dart';
 import '../../models/order_model.dart';
 import '../../models/product_model.dart';
+import '../../models/store_model.dart';
 import '../../core/theme.dart';
 import '../home/home_view.dart';
 
@@ -21,6 +24,31 @@ class _CartViewState extends State<CartView> {
   final _formKey = GlobalKey<FormState>();
   bool _isPlacingOrder = false;
 
+  String _paymentMethod = 'cash';
+  String? _receiptBase64;
+  StoreModel? _storeModel;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchStoreDetails();
+    });
+  }
+
+  Future<void> _fetchStoreDetails() async {
+    final cart = context.read<CartProvider>();
+    if (cart.storeId == null) return;
+    final service = context.read<FirebaseService>();
+    final doc = await service.db.collection('stores').doc(cart.storeId).get();
+    if (doc.exists && mounted) {
+      setState(() {
+        _storeModel = StoreModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      });
+    }
+  }
+
   @override
   void dispose() {
     _locationController.dispose();
@@ -30,6 +58,12 @@ class _CartViewState extends State<CartView> {
   void _checkout() async {
     if (context.read<CartProvider>().items.isEmpty) return;
     if (!_formKey.currentState!.validate()) return;
+    if (_paymentMethod == 'transfer' && _receiptBase64 == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Por favor sube la captura del comprobante de transferencia", style: TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent),
+      );
+      return;
+    }
 
     setState(() {
       _isPlacingOrder = true;
@@ -44,6 +78,8 @@ class _CartViewState extends State<CartView> {
       items: cart.items.values.toList(),
       total: cart.totalAmount + 0.50, // Including delivery fee
       deliveryLocation: _locationController.text.trim(),
+      paymentMethod: _paymentMethod,
+      paymentReceiptBase64: _receiptBase64,
     );
 
     setState(() {
@@ -248,6 +284,68 @@ class _CartViewState extends State<CartView> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 24),
+                            
+                            // Payment Method
+                            const Text("Método de Pago", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.darkPurple)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ChoiceChip(
+                                    label: const Text("Efectivo"),
+                                    selected: _paymentMethod == 'cash',
+                                    onSelected: (val) {
+                                      if (val) setState(() => _paymentMethod = 'cash');
+                                    },
+                                    selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                    labelStyle: TextStyle(color: _paymentMethod == 'cash' ? AppTheme.primaryColor : Colors.grey),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: ChoiceChip(
+                                    label: const Text("Transferencia"),
+                                    selected: _paymentMethod == 'transfer',
+                                    onSelected: (val) {
+                                      if (val) setState(() => _paymentMethod = 'transfer');
+                                    },
+                                    selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                    labelStyle: TextStyle(color: _paymentMethod == 'transfer' ? AppTheme.primaryColor : Colors.grey),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_paymentMethod == 'transfer') ...[
+                              const SizedBox(height: 16),
+                              if (_storeModel?.paymentQrBase64 != null && _storeModel!.paymentQrBase64!.isNotEmpty)
+                                Center(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.memory(base64Decode(_storeModel!.paymentQrBase64!), height: 180, width: 180, fit: BoxFit.cover),
+                                  ),
+                                ),
+                              if (_storeModel?.paymentAccountInfo != null && _storeModel!.paymentAccountInfo!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(_storeModel!.paymentAccountInfo!, style: const TextStyle(fontSize: 13, color: Colors.grey), textAlign: TextAlign.center),
+                                ),
+                              const SizedBox(height: 8),
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  final XFile? image = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600, imageQuality: 50);
+                                  if (image != null) {
+                                    final bytes = await image.readAsBytes();
+                                    setState(() {
+                                      _receiptBase64 = base64Encode(bytes);
+                                    });
+                                  }
+                                },
+                                icon: Icon(_receiptBase64 != null ? Icons.check_circle_rounded : Icons.upload_file_rounded, color: AppTheme.primaryColor),
+                                label: Text(_receiptBase64 != null ? "Comprobante Subido" : "Subir Captura del Comprobante", style: const TextStyle(color: AppTheme.primaryColor)),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, side: const BorderSide(color: AppTheme.primaryColor)),
+                              ),
+                            ],
                             const SizedBox(height: 24),
                             
                             // Checkout Button
