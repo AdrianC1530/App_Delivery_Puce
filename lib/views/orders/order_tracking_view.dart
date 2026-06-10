@@ -271,13 +271,13 @@ Widget _buildOrderCard(BuildContext context, OrderModel order, {required bool is
                   ),
                   child: Row(
                     children: [
-                      Icon(order.paymentMethod == 'transfer' ? Icons.account_balance_wallet_rounded : Icons.money_rounded, size: 16, color: AppTheme.primaryColor),
+                      Icon((order.paymentMethod == 'transfer' || order.paymentMethod == 'deuna') ? Icons.account_balance_wallet_rounded : Icons.money_rounded, size: 16, color: AppTheme.primaryColor),
                       const SizedBox(width: 4),
-                      Text(order.paymentMethod == 'transfer' ? "Transferencia" : "Efectivo", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.darkPurple)),
+                      Text(order.paymentMethod == 'deuna' ? "DeUna!" : (order.paymentMethod == 'transfer' ? "Transferencia" : "Efectivo"), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.darkPurple)),
                     ],
                   ),
                 ),
-                if (isMerchantFlow && order.paymentMethod == 'transfer' && order.paymentReceiptBase64 != null)
+                if (isMerchantFlow && (order.paymentMethod == 'transfer' || order.paymentMethod == 'deuna') && order.paymentReceiptBase64 != null)
                   TextButton.icon(
                     onPressed: () {
                       showDialog(

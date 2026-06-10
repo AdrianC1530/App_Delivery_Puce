@@ -58,9 +58,9 @@ class _CartViewState extends State<CartView> {
   void _checkout() async {
     if (context.read<CartProvider>().items.isEmpty) return;
     if (!_formKey.currentState!.validate()) return;
-    if (_paymentMethod == 'transfer' && _receiptBase64 == null) {
+    if ((_paymentMethod == 'transfer' || _paymentMethod == 'deuna') && _receiptBase64 == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor sube la captura del comprobante de transferencia", style: TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent),
+        const SnackBar(content: Text("Por favor sube la captura del comprobante", style: TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent),
       );
       return;
     }
@@ -314,21 +314,45 @@ class _CartViewState extends State<CartView> {
                                     labelStyle: TextStyle(color: _paymentMethod == 'transfer' ? AppTheme.primaryColor : Colors.grey),
                                   ),
                                 ),
+                                Expanded(
+                                  child: ChoiceChip(
+                                    label: const Text("DeUna!", style: TextStyle(fontSize: 12)),
+                                    selected: _paymentMethod == 'deuna',
+                                    onSelected: (val) {
+                                      if (val) setState(() => _paymentMethod = 'deuna');
+                                    },
+                                    selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                    labelStyle: TextStyle(color: _paymentMethod == 'deuna' ? AppTheme.primaryColor : Colors.grey),
+                                  ),
+                                ),
                               ],
                             ),
-                            if (_paymentMethod == 'transfer') ...[
+                            if (_paymentMethod == 'transfer' || _paymentMethod == 'deuna') ...[
                               const SizedBox(height: 16),
-                              if (_storeModel?.paymentQrBase64 != null && _storeModel!.paymentQrBase64!.isNotEmpty)
+                              
+                              if (_paymentMethod == 'deuna' && _storeModel?.paymentQrBase64 != null && _storeModel!.paymentQrBase64!.isNotEmpty)
                                 Center(
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: Image.memory(base64Decode(_storeModel!.paymentQrBase64!), height: 180, width: 180, fit: BoxFit.cover),
                                   ),
                                 ),
-                              if (_storeModel?.paymentAccountInfo != null && _storeModel!.paymentAccountInfo!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(_storeModel!.paymentAccountInfo!, style: const TextStyle(fontSize: 13, color: Colors.grey), textAlign: TextAlign.center),
+                                
+                              if (_paymentMethod == 'transfer' && _storeModel?.paymentAccountInfo != null && _storeModel!.paymentAccountInfo!.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      const Text("Datos para Transferencia", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.darkPurple)),
+                                      const SizedBox(height: 6),
+                                      Text(_storeModel!.paymentAccountInfo!, style: const TextStyle(fontSize: 14, color: Colors.black87), textAlign: TextAlign.center),
+                                    ],
+                                  ),
                                 ),
                               const SizedBox(height: 8),
                               ElevatedButton.icon(
