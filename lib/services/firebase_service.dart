@@ -652,6 +652,8 @@ class FirebaseService extends ChangeNotifier {
           total: order.total,
           status: newStatus,
           deliveryLocation: order.deliveryLocation,
+          paymentMethod: order.paymentMethod,
+          paymentReceiptBase64: order.paymentReceiptBase64,
           createdAt: order.createdAt,
         );
         notifyListeners();

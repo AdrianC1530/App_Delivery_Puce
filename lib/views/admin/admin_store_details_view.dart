@@ -257,4 +257,92 @@ class AdminStoreDetailsView extends StatelessWidget {
       ),
     );
   }
+
+  void _showPaymentConfigDialog(BuildContext context, FirebaseService service, StoreModel store) {
+    final accountCtrl = TextEditingController(text: store.paymentAccountInfo ?? '');
+    String? currentQrBase64 = store.paymentQrBase64;
+    final ImagePicker picker = ImagePicker();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Configuración de Pagos", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.darkPurple)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text("Sube tu código QR de DeUna! para que los estudiantes puedan transferirte.", style: TextStyle(fontSize: 14)),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () async {
+                        final XFile? image = await picker.pickImage(source: ImageSource.gallery, maxWidth: 600, imageQuality: 50);
+                        if (image != null) {
+                          final bytes = await image.readAsBytes();
+                          setState(() {
+                            currentQrBase64 = base64Encode(bytes);
+                          });
+                        }
+                      },
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.primaryColor, width: 2),
+                        ),
+                        child: currentQrBase64 != null && currentQrBase64!.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.memory(base64Decode(currentQrBase64!), fit: BoxFit.cover),
+                              )
+                            : const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.upload_file_rounded, size: 40, color: AppTheme.primaryColor),
+                                  SizedBox(height: 8),
+                                  Text("Subir QR", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: accountCtrl,
+                      decoration: InputDecoration(
+                        labelText: "Información de la Cuenta (Opcional)",
+                        hintText: "Ej. Cuenta Ahorros Pichincha #220...",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await service.db.collection('stores').doc(store.id).update({
+                      'paymentQrBase64': currentQrBase64,
+                      'paymentAccountInfo': accountCtrl.text.trim(),
+                    });
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  child: const Text("Guardar", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
+  }
 }
